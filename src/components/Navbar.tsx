@@ -34,70 +34,72 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Top Bar */}
-      <div className="topbar">
-        <div className="topbar-inner">
-          <div className="topbar-links">
-            <div className="topbar-item">
-              <Phone size={13} />
-              <span>01-5201144</span>
+      <header className="site-header">
+        {/* Top Bar */}
+        <div className="topbar">
+          <div className="topbar-inner">
+            <div className="topbar-links">
+              <div className="topbar-item">
+                <Phone size={13} />
+                <span>01-5201144</span>
+              </div>
+              <div className="topbar-item">
+                <Mail size={13} />
+                <span>info@lalitpurglobalacademy.edu.np</span>
+              </div>
             </div>
-            <div className="topbar-item">
-              <Mail size={13} />
-              <span>info@lalitpurglobalacademy.edu.np</span>
+            <div className="topbar-links">
+              <Link to="/admissions" style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.8125rem' }}>Apply Now</Link>
+              <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
+              <Link to="/login" style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.8125rem' }}>Admin Login</Link>
             </div>
-          </div>
-          <div className="topbar-links">
-            <Link to="/admissions" style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.8125rem' }}>Apply Now</Link>
-            <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
-            <Link to="/login" style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.8125rem' }}>Admin Login</Link>
           </div>
         </div>
-      </div>
 
-      {/* Navbar */}
-      <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
-        <div className="navbar-inner">
-          {/* Logo */}
-          <Link to="/" className="navbar-logo">
-            <img src="/images/logo.jpg" alt="Global Academy Logo" className="navbar-logo-img" />
-            <div className="navbar-logo-text">
-              <span className="navbar-logo-name">Global Academy</span>
-              <span className="navbar-logo-tagline">Secondary School</span>
-            </div>
-          </Link>
-
-          {/* Desktop Nav */}
-          <nav className="navbar-nav">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.path}
-                to={link.path}
-                end={link.path === '/'}
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          {/* Actions */}
-          <div className="navbar-actions">
-            <Link to="/admissions" className="btn btn-accent btn-sm" style={{ display: 'flex' }}>
-              Apply Now
+        {/* Navbar */}
+        <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+          <div className="navbar-inner">
+            {/* Logo */}
+            <Link to="/" className="navbar-logo">
+              <img src="/images/logo.jpg" alt="Global Academy Logo" className="navbar-logo-img" />
+              <div className="navbar-logo-text">
+                <span className="navbar-logo-name">Global Academy</span>
+                <span className="navbar-logo-tagline">Secondary School</span>
+              </div>
             </Link>
-            <button
-              className={`hamburger ${mobileOpen ? 'open' : ''}`}
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Toggle menu"
-            >
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
+
+            {/* Desktop Nav */}
+            <nav className="navbar-nav">
+              {navLinks.map((link) => (
+                <NavLink
+                  key={link.path}
+                  to={link.path}
+                  end={link.path === '/'}
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  {link.label}
+                </NavLink>
+              ))}
+            </nav>
+
+            {/* Actions */}
+            <div className="navbar-actions">
+              <Link to="/admissions" className="btn btn-accent btn-sm" style={{ display: 'flex' }}>
+                Apply Now
+              </Link>
+              <button
+                className={`hamburger ${mobileOpen ? 'open' : ''}`}
+                onClick={() => setMobileOpen(!mobileOpen)}
+                aria-label="Toggle menu"
+              >
+                <span></span>
+                <span></span>
+                <span></span>
+              </button>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </header>
 
       {/* Mobile Menu */}
       <div className={`mobile-menu ${mobileOpen ? 'open' : ''}`}>
@@ -145,8 +147,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Spacer */}
-      <div style={{ height: 'calc(var(--nav-height) + 37px)' }}></div>
+      <div className="site-header-spacer" aria-hidden="true"></div>
     </>
   );
 }

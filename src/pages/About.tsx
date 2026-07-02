@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Target, Eye, Heart } from 'lucide-react';
 import { timelineData, leadersData } from '../services/mockData';
 
 function FadeInSection({ children }: { children: React.ReactNode }) {
@@ -112,9 +111,6 @@ export default function About() {
                 onMouseEnter={e => (e.currentTarget.style.boxShadow = 'var(--shadow-lg)')}
                 onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
               >
-                <div style={{ width: 64, height: 64, background: 'rgba(22,58,112,0.08)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--primary)' }}>
-                  <Target size={28} />
-                </div>
                 <h3 style={{ fontSize: '1.25rem', color: 'var(--primary)', marginBottom: 12 }}>Our Mission</h3>
                 <p style={{ fontSize: '0.9375rem', lineHeight: 1.8 }}>
                   To provide exceptional, holistic education that empowers every student to achieve
@@ -122,9 +118,6 @@ export default function About() {
                 </p>
               </div>
               <div style={{ background: 'var(--primary)', borderRadius: 'var(--radius-lg)', padding: '36px 28px', textAlign: 'center' }}>
-                <div style={{ width: 64, height: 64, background: 'rgba(255,255,255,0.15)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--accent)' }}>
-                  <Eye size={28} />
-                </div>
                 <h3 style={{ fontSize: '1.25rem', color: 'white', marginBottom: 12 }}>Our Vision</h3>
                 <p style={{ fontSize: '0.9375rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.8)' }}>
                   To be Nepal's leading educational institution, recognized nationally and internationally
@@ -135,9 +128,6 @@ export default function About() {
                 onMouseEnter={e => (e.currentTarget.style.boxShadow = 'var(--shadow-lg)')}
                 onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
               >
-                <div style={{ width: 64, height: 64, background: 'rgba(22,58,112,0.08)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--primary)' }}>
-                  <Heart size={28} />
-                </div>
                 <h3 style={{ fontSize: '1.25rem', color: 'var(--primary)', marginBottom: 12 }}>Our Values</h3>
                 <p style={{ fontSize: '0.9375rem', lineHeight: 1.8 }}>
                   Integrity, Excellence, Respect, Innovation, Compassion, and Responsibility form the
@@ -149,15 +139,14 @@ export default function About() {
             {/* Core Values Grid */}
             <div className="values-grid">
               {[
-                { icon: '🏆', title: 'Excellence', desc: 'We pursue the highest standards in everything we do.' },
-                { icon: '🤝', title: 'Integrity', desc: 'We act with honesty, transparency, and accountability.' },
-                { icon: '🌍', title: 'Respect', desc: 'We value every individual and celebrate diversity.' },
-                { icon: '💡', title: 'Innovation', desc: 'We embrace new ideas and creative approaches to learning.' },
-                { icon: '❤️', title: 'Compassion', desc: 'We care deeply for our students, staff, and community.' },
-                { icon: '🌱', title: 'Growth', desc: 'We believe in continuous improvement and lifelong learning.' },
+                { title: 'Excellence', desc: 'We pursue the highest standards in everything we do.' },
+                { title: 'Integrity', desc: 'We act with honesty, transparency, and accountability.' },
+                { title: 'Respect', desc: 'We value every individual and celebrate diversity.' },
+                { title: 'Innovation', desc: 'We embrace new ideas and creative approaches to learning.' },
+                { title: 'Compassion', desc: 'We care deeply for our students, staff, and community.' },
+                { title: 'Growth', desc: 'We believe in continuous improvement and lifelong learning.' },
               ].map((val, i) => (
                 <div key={i} className="value-card">
-                  <div className="value-icon">{val.icon}</div>
                   <h4 className="value-title">{val.title}</h4>
                   <p className="value-desc">{val.desc}</p>
                 </div>
@@ -313,16 +302,15 @@ export default function About() {
             </div>
             <div className="grid-4">
               {[
-                { icon: '🏛️', title: 'NEB Affiliated', desc: 'Officially affiliated with the National Examinations Board, Nepal.' },
-                { icon: '📜', title: 'CDC Approved', desc: 'Curriculum approved by the Curriculum Development Centre, Nepal.' },
-                { icon: '🌟', title: 'ISO Certified', desc: 'ISO 9001:2015 certified for quality management in education.' },
-                { icon: '🏆', title: 'Award Winning', desc: 'Best School Award — Kathmandu Education Board 2023 & 2024.' },
+                { title: 'NEB Affiliated', desc: 'Officially affiliated with the National Examinations Board, Nepal.' },
+                { title: 'CDC Approved', desc: 'Curriculum approved by the Curriculum Development Centre, Nepal.' },
+                { title: 'ISO Certified', desc: 'ISO 9001:2015 certified for quality management in education.' },
+                { title: 'Award Winning', desc: 'Best School Award — Kathmandu Education Board 2023 & 2024.' },
               ].map((item, i) => (
                 <div key={i} style={{
                   background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '28px 20px',
                   textAlign: 'center', border: '1px solid var(--border)', transition: 'var(--transition)'
                 }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>{item.icon}</div>
                   <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 8 }}>{item.title}</h4>
                   <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{item.desc}</p>
                 </div>
@@ -341,7 +329,7 @@ export default function About() {
             Give your child the education they deserve. Apply for admission today.
           </p>
           <div className="cta-actions">
-            <Link to="/admissions" className="btn btn-accent btn-lg">Apply for Admission <ArrowRight size={18} /></Link>
+            <Link to="/admissions" className="btn btn-accent btn-lg">Apply for Admission</Link>
             <Link to="/contact" className="btn btn-outline-white btn-lg">Contact Us</Link>
           </div>
         </div>

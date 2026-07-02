@@ -208,21 +208,6 @@ export default function Contact() {
               title="Global Academy Secondary School Location"
             />
           </div>
-          <div style={{ display: 'flex', gap: 32, marginTop: 32, flexWrap: 'wrap' }}>
-            {[
-              { icon: '🚌', title: 'By Bus', desc: 'Multiple public bus routes pass through Lalitpur. Easily accessible from major routes.' },
-              { icon: '🚕', title: 'By Taxi/Cab', desc: 'Easy to reach by taxi or ride-sharing apps. Share our address with your driver.' },
-              { icon: '🚗', title: 'By Car', desc: 'Ample parking space available inside the campus premises.' },
-            ].map((m, i) => (
-              <div key={i} style={{ flex: 1, minWidth: 200, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                <div style={{ fontSize: '1.5rem' }}>{m.icon}</div>
-                <div>
-                  <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{m.title}</div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{m.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
     </>

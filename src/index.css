@@ -35,6 +35,7 @@
   --transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --nav-height: 76px;
+  --topbar-height: 37px;
 }
 
 /* Reset & Base */
@@ -391,17 +392,25 @@ p {
    NAVBAR
    ============================================================ */
 
-.navbar {
+.site-header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  z-index: 1000;
+}
+
+.site-header-spacer {
+  height: calc(var(--topbar-height) + var(--nav-height));
+}
+
+.navbar {
+  position: relative;
   height: var(--nav-height);
   background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
-  z-index: 1000;
   transition: var(--transition);
 }
 
@@ -532,7 +541,7 @@ p {
 .mobile-menu {
   display: none;
   position: fixed;
-  top: var(--nav-height);
+  top: calc(var(--topbar-height) + var(--nav-height));
   left: 0;
   right: 0;
   background: white;
@@ -572,6 +581,7 @@ p {
 
 /* Top Bar */
 .topbar {
+  height: var(--topbar-height);
   background: var(--primary);
   color: white;
   padding: 8px 0;
@@ -1079,24 +1089,6 @@ p {
   padding: 24px;
 }
 
-.facility-icon {
-  width: 52px;
-  height: 52px;
-  background: rgba(22, 58, 112, 0.08);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-  color: var(--primary);
-  transition: var(--transition);
-}
-
-.facility-card:hover .facility-icon {
-  background: var(--primary);
-  color: white;
-}
-
 .facility-title {
   font-size: 1.0625rem;
   font-weight: 600;
@@ -1159,30 +1151,6 @@ p {
 
 .why-section .section-subtitle {
   color: rgba(255, 255, 255, 0.75);
-}
-
-.why-item {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-}
-
-.why-icon {
-  flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent);
-  transition: var(--transition);
-}
-
-.why-item:hover .why-icon {
-  background: var(--accent);
-  color: white;
 }
 
 .why-item-title {
@@ -1649,25 +1617,6 @@ p {
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
   border-color: var(--secondary);
-}
-
-.value-icon {
-  width: 64px;
-  height: 64px;
-  background: rgba(22, 58, 112, 0.08);
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px;
-  color: var(--primary);
-  font-size: 1.5rem;
-  transition: var(--transition);
-}
-
-.value-card:hover .value-icon {
-  background: var(--primary);
-  color: white;
 }
 
 .value-title {
@@ -3234,6 +3183,11 @@ p {
 @media (max-width: 768px) {
   :root {
     --nav-height: 64px;
+    --topbar-height: 0px;
+  }
+
+  .topbar {
+    display: none;
   }
 
   .hamburger {

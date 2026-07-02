@@ -294,9 +294,6 @@ export default function Home() {
                   />
                   <div className="facility-card-overlay" />
                   <div className="facility-card-body">
-                    <div className="facility-icon">
-                      <span style={{ fontSize: '1.5rem' }}>{facility.icon}</span>
-                    </div>
                     <h3 className="facility-title">{facility.title}</h3>
                     <p className="facility-desc">{facility.desc}</p>
                   </div>
@@ -326,13 +323,8 @@ export default function Home() {
             <div className="grid-3">
               {whyChooseData.map((item, i) => (
                 <div key={i} className="why-item">
-                  <div className="why-icon">
-                    <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
-                  </div>
-                  <div>
-                    <h4 className="why-item-title">{item.title}</h4>
-                    <p className="why-item-desc">{item.desc}</p>
-                  </div>
+                  <h4 className="why-item-title">{item.title}</h4>
+                  <p className="why-item-desc">{item.desc}</p>
                 </div>
               ))}
             </div>
