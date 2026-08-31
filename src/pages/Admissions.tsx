@@ -1,398 +1,210 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Download, ChevronDown, CheckCircle, AlertCircle } from 'lucide-react';
-import { faqData } from '../services/mockData';
-import { showToast } from '../components/ToastProvider';
+import { useReveal } from '../hooks/useReveal';
+import { faqData } from '../data/schoolData';
+import FeeCalculator from '../components/FeeCalculator';
 
-function FadeInSection({ children }: { children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) entry.target.classList.add('is-visible'); },
-      { threshold: 0.1, rootMargin: '0px 0px -60px 0px' }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-  return <div ref={ref} className="fade-in-section">{children}</div>;
-}
-
-const processes = [
-  { step: 1, title: "Collect Prospectus", desc: "Visit our admissions office or download the prospectus from our website. It contains all information about our programs, curriculum, and fee structure." },
-  { step: 2, title: "Submit Application Form", desc: "Complete the admission inquiry form online or in person. Attach all required documents as mentioned in the checklist." },
-  { step: 3, title: "Entrance Assessment", desc: "Students applying for Grade 4 and above will appear for a written entrance assessment in core subjects. This is a formality to understand the student's current level." },
-  { step: 4, title: "Parent Interview", desc: "A brief orientation meeting with parents to discuss the school's philosophy, expectations, and your child's needs and goals." },
-  { step: 5, title: "Admission Offer", desc: "Successful applicants will receive an admission offer letter. Seats are confirmed upon payment of the admission fee within 7 days of the offer." },
-  { step: 6, title: "Enrollment Complete", desc: "Complete the enrollment by submitting original documents and paying the first term fees. Collect the uniform, books list, and academic calendar." },
+const steps = [
+  { step: '01', title: 'Inquiry & Campus Tour', desc: 'Fill out an inquiry form online or visit our school admissions desk to meet our counselors and take a guided tour.', time: 'Day 1' },
+  { step: '02', title: 'Application Form', desc: 'Submit the completed application form along with past academic records, birth certificate, and photographs.', time: 'Day 2–3' },
+  { step: '03', title: 'Assessment & Interaction', desc: 'Students participate in an age-appropriate assessment followed by a friendly parent-student interaction session.', time: 'Day 4–5' },
+  { step: '04', title: 'Enrollment & Welcome', desc: 'Receive the acceptance letter, complete fee formalities, and receive your welcome kit and student ID.', time: 'Day 7' },
 ];
 
 const feeStructure = [
-  { grade: "Pre-Primary (PP / Nursery)", admission: "5,000", monthly: "3,500", annual: "10,000" },
-  { grade: "Grade 1 – 3", admission: "7,000", monthly: "4,500", annual: "12,000" },
-  { grade: "Grade 4 – 5", admission: "8,000", monthly: "5,000", annual: "13,000" },
-  { grade: "Grade 6 – 8", admission: "10,000", monthly: "5,500", annual: "14,000" },
-  { grade: "Grade 9 – 10 (SEE)", admission: "12,000", monthly: "6,000", annual: "15,000" },
-  { grade: "Grade 11 – 12 Science", admission: "15,000", monthly: "7,000", annual: "18,000" },
-  { grade: "Grade 11 – 12 Management", admission: "12,000", monthly: "6,000", annual: "16,000" },
-];
-
-const requiredDocs = [
-  "Birth Certificate (original + photocopy)",
-  "Character Certificate from previous school",
-  "Report cards/mark sheets (last 2 years)",
-  "Citizenship copy of both parents",
-  "4 recent passport-size photographs",
-  "Transfer Certificate / Migration Certificate (if applicable)",
-  "Medical fitness certificate (for PP to Grade 3)",
-  "SEE Mark Sheet (for Grade 11 applicants)",
+  { level: 'Pre-Primary (PP/Nursery/KG)', admission: 'Rs. 15,000', monthly: 'Rs. 6,500', termFee: 'Rs. 4,000', features: ['Activity materials included', 'Nutritious midday snacks', 'Day care support option'] },
+  { level: 'Primary School (Grade 1–5)', admission: 'Rs. 18,000', monthly: 'Rs. 7,800', termFee: 'Rs. 5,000', features: ['Computer lab access', 'Art & music sessions', 'Extracurricular coaching'] },
+  { level: 'Lower Secondary (Grade 6–8)', admission: 'Rs. 20,000', monthly: 'Rs. 8,900', termFee: 'Rs. 6,000', features: ['Science practicals', 'Robotics & coding club', 'Sports specializations'] },
+  { level: 'Secondary (Grade 9–10 SEE)', admission: 'Rs. 22,000', monthly: 'Rs. 10,200', termFee: 'Rs. 7,000', features: ['Intensive SEE preparation', 'Career counseling', 'Full lab privileges'] },
+  { level: 'Higher Secondary (+2 Science / Mgmt)', admission: 'Rs. 25,000', monthly: 'Rs. 11,500', termFee: 'Rs. 8,000', features: ['NEB board prep', 'Entrance exam guidance', 'Modern lecture rooms'] },
 ];
 
 export default function Admissions() {
+  useReveal();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [formData, setFormData] = useState({
-    studentName: '', grade: '', parentName: '', phone: '', email: '', message: ''
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.studentName || !formData.parentName || !formData.phone || !formData.grade) {
-      showToast('Please fill all required fields.', 'error');
-      return;
-    }
-    setLoading(true);
-    // Simulate API call
-    await new Promise(r => setTimeout(r, 1500));
-    showToast('Your admission inquiry has been submitted! We will contact you within 24 hours.', 'success');
-    setFormData({ studentName: '', grade: '', parentName: '', phone: '', email: '', message: '' });
-    setLoading(false);
-  };
 
   return (
     <>
       <div className="page-hero">
-        <div className="page-hero-content">
-          <nav className="breadcrumb" style={{ marginBottom: 16 }}>
-            <Link to="/" className="breadcrumb-item">Home</Link>
-            <span className="breadcrumb-sep">›</span>
-            <span className="breadcrumb-item active">Admissions</span>
-          </nav>
+        <div className="container page-hero-content">
+          <nav className="breadcrumb"><Link to="/">Home</Link><span>/</span><span>Admissions</span></nav>
           <h1 className="page-hero-title">Admissions 2025–26</h1>
-          <p className="page-hero-subtitle">
-            Join the Global Academy family. Applications now open for all grades.
-          </p>
+          <p className="page-hero-subtitle">Invest in your child’s future. Join a community that values curiosity, character, and academic distinction.</p>
         </div>
       </div>
 
-      {/* Quick Info Banner */}
-      <div style={{ background: 'var(--accent)', padding: '16px 0' }}>
-        <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'white', fontWeight: 600 }}>
-            <AlertCircle size={18} />
-            Admissions Open for 2025-26
+      {/* Admission Notice Banner */}
+      <section className="section-navy" style={{ padding: '30px 0', borderBottom: '2px solid var(--gold)' }}>
+        <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <span style={{ color: 'var(--gold-light)', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: 1 }}>Admission Status</span>
+            <h3 style={{ color: 'white', margin: '4px 0 0', fontSize: '1.2rem' }}>Applications Open for Session 2025–2026</h3>
           </div>
-          <span style={{ color: 'rgba(255,255,255,0.6)' }}>|</span>
-          <span style={{ color: 'white', fontSize: '0.9375rem' }}>Limited Seats Available — Apply Early</span>
-          <span style={{ color: 'rgba(255,255,255,0.6)' }}>|</span>
-          <span style={{ color: 'white', fontSize: '0.9375rem' }}>Deadline: March 31, 2025</span>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <Link to="/downloads" className="btn btn-outline-white btn-sm">Download Form (PDF)</Link>
+            <Link to="/contact" className="btn btn-gold btn-sm">Book Campus Visit</Link>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Admission Process */}
-      <FadeInSection>
-        <section className="section">
-          <div className="container">
-            <div className="section-header">
-              <div className="section-tag">Step by Step</div>
-              <h2 className="section-title">Admission Process</h2>
-              <p className="section-subtitle">
-                Our transparent and straightforward admission process ensures a smooth start for every student.
+      {/* 4-Step Process */}
+      <section className="section section-cream">
+        <div className="container">
+          <div className="section-header centered reveal">
+            <span className="section-eyebrow">Step-by-Step</span>
+            <h2 className="section-title">The Admission Journey</h2>
+            <p className="section-subtitle">We make enrolling your child straightforward, transparent, and supportive every step of the way.</p>
+          </div>
+
+          <div className="programs-grid">
+            {steps.map((step, i) => (
+              <div key={i} className="card reveal" style={{ padding: 32, position: 'relative', overflow: 'visible', transitionDelay: `${i * 90}ms` }}>
+                <div style={{
+                  position: 'absolute', top: -16, left: 24,
+                  background: 'var(--navy)', color: 'var(--gold-light)',
+                  padding: '6px 14px', borderRadius: 'var(--radius-full)',
+                  fontWeight: 700, fontSize: '0.85rem', border: '2px solid var(--gold)'
+                }}>
+                  {step.step}
+                </div>
+                <div style={{ textAlign: 'right', fontSize: '0.8rem', color: 'var(--gold)', fontWeight: 700 }}>{step.time}</div>
+                <h3 style={{ marginTop: 12, fontSize: '1.2rem' }}>{step.title}</h3>
+                <p style={{ color: 'var(--gray-500)', lineHeight: 1.65, fontSize: '0.92rem', marginTop: 8 }}>{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Eligibility & Required Documents */}
+      <section className="section section-white">
+        <div className="container">
+          <div className="quote-block">
+            <div className="quote-content reveal">
+              <span className="section-eyebrow">Requirements</span>
+              <h2 className="section-title">Eligibility & Documents</h2>
+              <p style={{ color: 'var(--gray-500)', lineHeight: 1.7, marginBottom: 20 }}>
+                Please bring original and copies of the following documents during your admission interview:
               </p>
-            </div>
-            <div style={{ maxWidth: 700, margin: '0 auto' }}>
-              <div className="admission-process">
-                {processes.map((step) => (
-                  <div key={step.step} className="process-step">
-                    <div className="process-number">{step.step}</div>
-                    <div className="process-content">
-                      <h3 className="process-title">Step {step.step}: {step.title}</h3>
-                      <p className="process-desc">{step.desc}</p>
-                    </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                {[
+                  'Birth Certificate (Original + Copy)',
+                  'Previous School Character Certificate',
+                  'Last 2 Years Marksheet / Progress Card',
+                  'Citizenship Copy of Parents/Guardian',
+                  '4 Recent Passport-sized Photographs',
+                  'Transfer Certificate (Grade 2 upwards)',
+                ].map((doc, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <span style={{ color: '#059669', fontWeight: 700 }}>✓</span>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--navy)' }}>{doc}</span>
                   </div>
                 ))}
               </div>
+              <div style={{ marginTop: 32 }}>
+                <Link to="/contact" className="btn btn-navy">Schedule Counseling Session</Link>
+              </div>
+            </div>
+            <div className="quote-image reveal">
+              <img src="/images/classroom.jpg" alt="Global Academy Classrooms" />
             </div>
           </div>
-        </section>
-      </FadeInSection>
+        </div>
+      </section>
 
-      {/* Required Documents */}
-      <FadeInSection>
-        <section className="section" style={{ background: 'var(--bg)' }}>
-          <div className="container">
-            <div className="grid-2" style={{ alignItems: 'start', gap: 64 }}>
-              <div>
-                <div className="section-tag" style={{ justifyContent: 'flex-start' }}>Documents Required</div>
-                <h2 className="section-title">Required Documents</h2>
-                <p style={{ marginBottom: 32 }}>
-                  Please ensure you have all documents ready before submitting your application.
-                  Original documents must be presented at the time of enrollment.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {requiredDocs.map((doc, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                      <CheckCircle size={18} color="var(--success)" style={{ flexShrink: 0, marginTop: 2 }} />
-                      <span style={{ fontSize: '0.9375rem', color: 'var(--text-secondary)' }}>{doc}</span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginTop: 32, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                  <button className="btn btn-primary">
-                    <Download size={16} />
-                    Download Checklist
-                  </button>
-                  <button className="btn btn-outline">
-                    <Download size={16} />
-                    Download Form
-                  </button>
-                </div>
-                <div style={{ marginTop: 32 }}>
-                  <img 
-                    src="/images/brochure.jpg" 
-                    alt="School Brochure" 
-                    style={{ 
-                      width: '100%', 
-                      maxWidth: 400, 
-                      height: 'auto', 
-                      borderRadius: 'var(--radius-lg)',
-                      boxShadow: 'var(--shadow-md)',
-                      border: '2px solid var(--border)'
-                    }} 
-                  />
-                  <p style={{ marginTop: 8, fontSize: '0.875rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-                    Download our prospectus for detailed information
-                  </p>
-                </div>
-              </div>
-              <div>
-                <div className="section-tag" style={{ justifyContent: 'flex-start' }}>Financial Info</div>
-                <h2 className="section-title">Fee Structure 2025-26</h2>
-                <p style={{ marginBottom: 24, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                  All fees are in Nepalese Rupees (NPR). Monthly fees are payable on or before the 15th of each month.
-                </p>
-                <div style={{ overflowX: 'auto' }}>
-                  <table className="fee-table">
-                    <thead>
-                      <tr>
-                        <th>Grade</th>
-                        <th>Admission (NPR)</th>
-                        <th>Monthly (NPR)</th>
-                        <th>Annual (NPR)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {feeStructure.map((fee, i) => (
-                        <tr key={i}>
-                          <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{fee.grade}</td>
-                          <td>{fee.admission}</td>
-                          <td>{fee.monthly}</td>
-                          <td>{fee.annual}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <p style={{ marginTop: 12, fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                  * Fees are subject to annual revision. Annual charges include exam fees, activities, library, and more.
-                </p>
-              </div>
-            </div>
+      {/* Interactive Fee Estimator Widget */}
+      <section className="section section-cream" id="calculator">
+        <div className="container">
+          <FeeCalculator />
+        </div>
+      </section>
+
+      {/* Fee Structure Table */}
+      <section className="section section-white">
+        <div className="container">
+          <div className="section-header centered reveal">
+            <span className="section-eyebrow">Transparent Pricing</span>
+            <h2 className="section-title">Official Fee Schedule (2025–26)</h2>
+            <p className="section-subtitle">We believe in transparent, competitive fee structures with merit and need-based scholarships available.</p>
           </div>
-        </section>
-      </FadeInSection>
 
-      {/* Online Inquiry Form */}
-      <FadeInSection>
-        <section className="section" style={{ background: 'var(--surface)' }}>
-          <div className="container">
-            <div className="grid-2" style={{ alignItems: 'start', gap: 64 }}>
-              <div>
-                <div className="section-tag" style={{ justifyContent: 'flex-start' }}>Get In Touch</div>
-                <h2 className="section-title">Online Admission Inquiry</h2>
-                <p style={{ marginBottom: 32 }}>
-                  Fill in the form and our admissions team will contact you within 24 hours to guide you
-                  through the next steps.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {[
-                    { icon: '📞', label: 'Call Us', value: '01-5201144' },
-                    { icon: '📧', label: 'Email', value: 'info@lalitpurglobalacademy.edu.np' },
-                    { icon: '📍', label: 'Address', value: 'Lalitpur, Nepal' },
-                    { icon: '🕐', label: 'Office Hours', value: 'Sun – Fri: 9:00 AM – 4:00 PM' },
-                  ].map((item, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                      <div style={{ width: 44, height: 44, background: 'rgba(22,58,112,0.08)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', flexShrink: 0 }}>
-                        {item.icon}
+          <div className="card reveal" style={{ padding: 0, overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: 650 }}>
+              <thead>
+                <tr style={{ background: 'var(--navy)', color: 'white' }}>
+                  <th style={{ padding: '18px 24px', fontWeight: 600 }}>Grade Level</th>
+                  <th style={{ padding: '18px 20px', fontWeight: 600 }}>Admission Fee</th>
+                  <th style={{ padding: '18px 20px', fontWeight: 600 }}>Monthly Tuition</th>
+                  <th style={{ padding: '18px 20px', fontWeight: 600 }}>Term Exam Fee</th>
+                  <th style={{ padding: '18px 24px', fontWeight: 600 }}>Key Inclusions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {feeStructure.map((row, i) => (
+                  <tr key={i} style={{ borderBottom: '1px solid var(--gray-100)', background: i % 2 === 0 ? 'white' : 'var(--cream)' }}>
+                    <td style={{ padding: '18px 24px', fontWeight: 700, color: 'var(--navy)' }}>{row.level}</td>
+                    <td style={{ padding: '18px 20px', color: 'var(--gold)', fontWeight: 700 }}>{row.admission}</td>
+                    <td style={{ padding: '18px 20px', color: 'var(--navy-light)', fontWeight: 600 }}>{row.monthly}</td>
+                    <td style={{ padding: '18px 20px', color: 'var(--gray-500)' }}>{row.termFee}</td>
+                    <td style={{ padding: '18px 24px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {row.features.map((f, fi) => (
+                          <span key={fi} style={{ fontSize: '0.8rem', color: 'var(--gray-500)' }}>• {f}</span>
+                        ))}
                       </div>
-                      <div>
-                        <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</div>
-                        <div style={{ fontSize: '0.9375rem', color: 'var(--text-primary)', fontWeight: 500 }}>{item.value}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-xl)', padding: '36px', border: '1px solid var(--border)' }}>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 24 }}>
-                    Submit Your Inquiry
-                  </h3>
-                  <form onSubmit={handleSubmit}>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label className="form-label">Student's Full Name *</label>
-                        <input
-                          type="text"
-                          name="studentName"
-                          className="form-input"
-                          placeholder="Student's full name"
-                          value={formData.studentName}
-                          onChange={handleChange}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Applying for Grade *</label>
-                        <select
-                          name="grade"
-                          className="form-select"
-                          value={formData.grade}
-                          onChange={handleChange}
-                          required
-                        >
-                          <option value="">Select Grade</option>
-                          <option>PP / Nursery</option>
-                          <option>Grade 1</option>
-                          <option>Grade 2</option>
-                          <option>Grade 3</option>
-                          <option>Grade 4</option>
-                          <option>Grade 5</option>
-                          <option>Grade 6</option>
-                          <option>Grade 7</option>
-                          <option>Grade 8</option>
-                          <option>Grade 9</option>
-                          <option>Grade 10</option>
-                          <option>Grade 11 — Science</option>
-                          <option>Grade 11 — Management</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Parent / Guardian Name *</label>
-                      <input
-                        type="text"
-                        name="parentName"
-                        className="form-input"
-                        placeholder="Parent or guardian's name"
-                        value={formData.parentName}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label className="form-label">Phone Number *</label>
-                        <input
-                          type="tel"
-                          name="phone"
-                          className="form-input"
-                          placeholder="Contact number"
-                          value={formData.phone}
-                          onChange={handleChange}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Email Address</label>
-                        <input
-                          type="email"
-                          name="email"
-                          className="form-input"
-                          placeholder="Email (optional)"
-                          value={formData.email}
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Additional Message</label>
-                      <textarea
-                        name="message"
-                        className="form-textarea"
-                        placeholder="Any specific questions or information you'd like to share..."
-                        value={formData.message}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-                      {loading ? 'Submitting...' : 'Submit Inquiry'}
-                      {!loading && <ArrowRight size={16} />}
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </section>
-      </FadeInSection>
+          <p style={{ textAlign: 'center', marginTop: 18, color: 'var(--gray-500)', fontSize: '0.85rem' }}>
+            * Note: Transportation, uniform, and special extracurricular activities are billed separately. Scholarships applicable on tuition fees.
+          </p>
+        </div>
+      </section>
 
-      {/* FAQ */}
-      <FadeInSection>
-        <section className="section" style={{ background: 'var(--bg)' }}>
-          <div className="container">
-            <div className="section-header">
-              <div className="section-tag">FAQ</div>
-              <h2 className="section-title">Frequently Asked Questions</h2>
-              <p className="section-subtitle">
-                Find answers to the most common questions about admissions at Global Academy Secondary School.
-              </p>
-            </div>
-            <div style={{ maxWidth: 800, margin: '0 auto' }}>
-              {faqData.map((faq) => (
-                <div key={faq.id} className="faq-item">
-                  <button
-                    className={`faq-question ${openFaq === faq.id ? 'open' : ''}`}
-                    onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
-                  >
-                    {faq.question}
-                    <ChevronDown size={18} className="faq-chevron" />
-                  </button>
-                  <div className={`faq-answer ${openFaq === faq.id ? 'open' : ''}`}>
-                    {faq.answer}
+      {/* FAQ Accordion */}
+      <section className="section section-white">
+        <div className="container" style={{ maxWidth: 850 }}>
+          <div className="section-header centered reveal">
+            <span className="section-eyebrow">Got Questions?</span>
+            <h2 className="section-title">Frequently Asked Questions</h2>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {faqData.map((f, i) => (
+              <div key={i} className="card reveal" style={{ padding: '0', overflow: 'hidden' }}>
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  style={{
+                    width: '100%', padding: '20px 24px', textAlign: 'left',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    fontWeight: 600, color: 'var(--navy)', fontSize: '1rem', background: openFaq === i ? 'var(--navy-soft)' : 'white'
+                  }}
+                >
+                  {f.question}
+                  <span style={{ transform: openFaq === i ? 'rotate(180deg)' : 'none', transition: 'transform 0.25s', color: 'var(--gold)' }}>▼</span>
+                </button>
+                {openFaq === i && (
+                  <div style={{ padding: '20px 24px', color: 'var(--gray-700)', lineHeight: 1.75, whiteSpace: 'pre-line', borderTop: '1px solid var(--gray-100)' }}>
+                    {f.answer}
                   </div>
-                </div>
-              ))}
-            </div>
+                )}
+              </div>
+            ))}
           </div>
-        </section>
-      </FadeInSection>
+        </div>
+      </section>
 
       {/* CTA */}
-      <section className="section cta-section">
-        <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <h2 className="cta-title">Start Your Child's Journey Today</h2>
-          <p className="cta-subtitle">Limited seats available. Don't miss the opportunity to join Global Academy.</p>
+      <section className="cta-banner">
+        <div className="cta-content">
+          <span className="section-eyebrow" style={{ color: 'var(--gold-light)', justifyContent: 'center' }}>Limited Seats</span>
+          <h2>Secure Your Child’s Seat Today</h2>
+          <p>Admissions are filled on a first-come, merit-evaluated basis. Start the application process now.</p>
           <div className="cta-actions">
-            <Link to="/contact" className="btn btn-accent btn-lg">
-              Visit Our Campus <ArrowRight size={18} />
-            </Link>
-            <a href="tel:+977015201144" className="btn btn-outline-white btn-lg">
-              Call: 01-5201144
-            </a>
+            <Link to="/contact" className="btn btn-gold btn-lg">Apply Online Now</Link>
+            <Link to="/downloads" className="btn btn-outline-white btn-lg">Download Admission Form</Link>
           </div>
         </div>
       </section>

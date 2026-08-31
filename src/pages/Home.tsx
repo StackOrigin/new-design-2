@@ -1,17 +1,24 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ArrowRight, Calendar, Clock, MapPin, ChevronRight,
-  Award, Users, BookOpen, TrendingUp, CheckCircle, Star
-} from 'lucide-react';
-import { newsData, eventsData, testimonialsData, whyChooseData, facilitiesData } from '../services/mockData';
+import { newsData, eventsData, testimonialsData, noticesData } from '../data/schoolData';
 
-// Animated counter component
+function useReveal() {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      }),
+      { threshold: 0.1, rootMargin: '0px 0px -60px 0px' }
+    );
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+}
+
 function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLSpanElement>(null);
   const animated = useRef(false);
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -23,417 +30,393 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: str
           let current = 0;
           const timer = setInterval(() => {
             current += increment;
-            if (current >= target) {
-              setCount(target);
-              clearInterval(timer);
-            } else {
-              setCount(Math.floor(current));
-            }
+            if (current >= target) { setCount(target); clearInterval(timer); }
+            else setCount(Math.floor(current));
           }, duration / steps);
         }
-      },
-      { threshold: 0.3 }
+      }, { threshold: 0.3 }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, [target]);
-
-  return <div ref={ref}>{count}{suffix}</div>;
+  return <span ref={ref}>{count}{suffix}</span>;
 }
 
-// Fade in on scroll
-function FadeInSection({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
+const stats = [
+  { value: 2500, suffix: '+', label: 'Students Enrolled' },
+  { value: 85, suffix: '+', label: 'Expert Teachers' },
+  { value: 30, suffix: '', label: 'Years of Excellence' },
+  { value: 98, suffix: '%', label: 'SEE Pass Rate' },
+];
 
+const heroSlides = [
+  { image: '/images/herosection image.jpg', alt: 'Students at Global Academy' },
+  { image: '/images/campus-aerial.jpg', alt: 'Campus aerial view' },
+  { image: '/images/classroom.jpg', alt: 'Modern classroom' },
+  { image: '/images/sports.jpg', alt: 'Sports activities' },
+];
+
+const programs = [
+  { step: '01', level: 'Early Childhood', title: 'Foundation Years', desc: 'Play-based learning that sparks curiosity and builds confidence.', color: '#c89f45' },
+  { step: '02', level: 'Primary School', title: 'Primary Years', desc: 'Strong foundations in literacy, numeracy, and character.', color: '#1a3363' },
+  { step: '03', level: 'Secondary School', title: 'Secondary & Higher', desc: 'Rigorous academics, leadership, and career preparation.', color: '#059669' },
+];
+
+const whyChoose = [
+  { number: '01', title: 'Academic Excellence', desc: 'Consistently outstanding results with a 98% pass rate.' },
+  { number: '02', title: 'Holistic Growth', desc: 'Arts, sports, and values woven into everyday learning.' },
+  { number: '03', title: 'Caring Community', desc: 'Small class sizes and teachers who truly know each child.' },
+  { number: '04', title: 'Future Ready', desc: 'Digital skills, critical thinking, and global awareness.' },
+];
+
+const galleryImages = [
+  { src: '/images/campus-aerial.jpg', title: 'Campus Aerial', large: true },
+  { src: '/images/library.jpg', title: 'Library' },
+  { src: '/images/science-lab.jpg', title: 'Science Lab' },
+  { src: '/images/sports.jpg', title: 'Sports' },
+  { src: '/images/computer-lab.jpg', title: 'Computer Lab' },
+];
+
+export default function Home() {
+  useReveal();
+  const featuredNews = newsData.slice(0, 3);
+  const pinnedNotices = noticesData.filter(n => n.pinned).slice(0, 3);
+
+  // Hero carousel
+  const [heroSlide, setHeroSlide] = useState(0);
+  const nextSlide = useCallback(() => {
+    setHeroSlide(prev => (prev + 1) % heroSlides.length);
+  }, []);
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-        }
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -60px 0px' }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
+    const timer = setInterval(nextSlide, 5000);
+    return () => clearInterval(timer);
+  }, [nextSlide]);
+
+  // Testimonial carousel
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveTestimonial(prev => (prev + 1) % testimonialsData.length);
+    }, 7000);
+    return () => clearInterval(timer);
   }, []);
 
   return (
-    <div ref={ref} className={`fade-in-section ${className}`}>
-      {children}
-    </div>
-  );
-}
-
-export default function Home() {
-  const featuredNews = newsData.slice(0, 3);
-  const upcomingEvents = eventsData.slice(0, 4);
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  };
-
-  const getDay = (dateStr: string) => new Date(dateStr).getDate();
-  const getMonth = (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US', { month: 'short' });
-
-  return (
-    <>
-      {/* ── HERO ── */}
+    <main>
+      {/* HERO with Carousel */}
       <section className="hero">
-        <div className="hero-bg">
-          <img src="/images/herosection image.jpg" alt="Global Academy Campus" loading="eager" />
-        </div>
-        <div className="hero-overlay" />
-        <div className="hero-content">
-          <div className="hero-badge">
-            <Star size={13} />
-            Ranked #1 School in Kathmandu Valley 2024
+        <div className="container hero-inner">
+          <div className="hero-content">
+            <div className="hero-badge">Ranked #1 Model School in Kathmandu Valley · Est. 1995</div>
+            <h1 className="hero-title">Shaping Tomorrow's <span>Leaders</span> Today</h1>
+            <p className="hero-subtitle">
+              Global Academy provides world-class education rooted in Nepali values — nurturing academic excellence, character, and lifelong success.
+            </p>
+            <div className="hero-actions">
+              <Link to="/admissions" className="btn btn-gold btn-lg">Apply for Admission →</Link>
+              <Link to="/about" className="btn btn-outline-white btn-lg">Discover Our Story</Link>
+            </div>
+            <div className="hero-stats-row">
+              {stats.slice(0, 3).map(s => (
+                <div key={s.label} className="hero-stat-item">
+                  <div className="hero-stat-number"><AnimatedCounter target={s.value} suffix={s.suffix} /></div>
+                  <div className="hero-stat-label">{s.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <h1 className="hero-title">
-            Shaping Tomorrow's<br />
-            <span>Leaders Today</span>
-          </h1>
-          <p className="hero-subtitle">
-            At Global Academy Secondary School, we provide world-class education rooted in Nepali values,
-            nurturing academic excellence, character, and lifelong success.
-          </p>
-          <div className="hero-actions">
-            <Link to="/admissions" className="btn btn-accent btn-lg">
-              Apply for Admission <ArrowRight size={18} />
-            </Link>
-            <Link to="/about" className="btn btn-outline-white btn-lg">
-              Learn More
-            </Link>
-          </div>
-          <div className="hero-stats">
-            <div className="hero-stat">
-              <div className="hero-stat-number">2500+</div>
-              <div className="hero-stat-label">Students Enrolled</div>
+          <div className="hero-media">
+            <div className="hero-media-main">
+              <div className="hero-carousel-wrapper">
+                {heroSlides.map((slide, i) => (
+                  <div key={i} className={`hero-slide ${i === heroSlide ? 'active' : ''}`}>
+                    <img src={slide.image} alt={slide.alt} />
+                  </div>
+                ))}
+                <div className="hero-carousel-dots">
+                  {heroSlides.map((_, i) => (
+                    <button
+                      key={i}
+                      className={`hero-carousel-dot ${i === heroSlide ? 'active' : ''}`}
+                      onClick={() => setHeroSlide(i)}
+                      aria-label={`Slide ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="hero-stat">
-              <div className="hero-stat-number">85+</div>
-              <div className="hero-stat-label">Expert Teachers</div>
-            </div>
-            <div className="hero-stat">
-              <div className="hero-stat-number">30</div>
-              <div className="hero-stat-label">Years of Excellence</div>
-            </div>
-            <div className="hero-stat">
-              <div className="hero-stat-number">98%</div>
-              <div className="hero-stat-label">SEE Pass Rate</div>
+            <div className="hero-media-stack">
+              <img src="/images/classroom.jpg" alt="Classroom" />
+              <img src="/images/students.jpg" alt="Students" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── STATS ── */}
-      <section className="stats-section">
-        <div className="stats-grid">
-          {[
-            { icon: Users, number: 2500, suffix: '+', label: 'Students Enrolled', color: '#D4A017' },
-            { icon: Award, number: 85, suffix: '+', label: 'Qualified Teachers', color: '#D4A017' },
-            { icon: BookOpen, number: 30, suffix: '', label: 'Years of Excellence', color: '#D4A017' },
-            { icon: TrendingUp, number: 98, suffix: '%', label: 'SEE Pass Rate 2024', color: '#D4A017' },
-          ].map((stat, i) => (
-            <div key={i} className="stat-item">
-              <div className="stat-number">
-                <AnimatedCounter target={stat.number} suffix={stat.suffix} />
-              </div>
-              <div className="stat-label">{stat.label}</div>
-            </div>
+      {/* EVENTS TICKER */}
+      <div className="events-ticker">
+        <div className="events-ticker-inner">
+          {[...eventsData, ...eventsData].map((event, i) => (
+            <span key={i}>
+              <span className="ticker-item">
+                <strong>{new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</strong>
+                {event.title}
+              </span>
+              <span className="ticker-divider" />
+            </span>
           ))}
         </div>
+      </div>
+
+      {/* STATS STRIP */}
+      <div className="container">
+        <div className="stats-strip">
+          <div className="stats-strip-grid">
+            {stats.map(s => (
+              <div key={s.label} className="stat-strip-item">
+                <div className="stat-strip-number"><AnimatedCounter target={s.value} suffix={s.suffix} /></div>
+                <div className="stat-strip-label">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* PRINCIPAL'S WELCOME */}
+      <section className="section section-cream">
+        <div className="container">
+          <div className="quote-block">
+            <div className="quote-image reveal">
+              <img src="/images/principal.jpg" alt="Principal Dr. Rajan Kumar Sharma" />
+            </div>
+            <div className="quote-content reveal">
+              <div className="quote-mark">"</div>
+              <p className="quote-text">
+                At Global Academy, we believe that every child is unique and carries infinite potential. Our mission is to ignite a lifelong love for learning and prepare students to lead with integrity.
+              </p>
+              <div className="quote-author">Dr. Rajan Kumar Sharma</div>
+              <div className="quote-role">Principal, Global Academy Secondary School</div>
+              <Link to="/about" className="btn btn-navy" style={{ marginTop: '28px' }}>Learn About Us</Link>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* ── PRINCIPAL'S MESSAGE ── */}
-      <FadeInSection>
-        <section className="section principal-section">
-          <div className="container">
-            <div className="section-header">
-              <div className="section-tag">Leadership</div>
-              <h2 className="section-title">Message from the Principal</h2>
-            </div>
-            <div className="principal-card">
-              <div className="principal-image-side">
-                <div className="principal-quote-mark">"</div>
-                <img src="/images/principal.jpg" alt="Principal Dr. Rajan Kumar Sharma" />
+      {/* PROGRAMS */}
+      <section className="section section-white">
+        <div className="container">
+          <div className="section-header centered reveal">
+            <span className="section-eyebrow">Academic Programs</span>
+            <h2 className="section-title">A Program for Every Stage</h2>
+            <p className="section-subtitle">From early childhood through higher secondary, we guide students with warmth, rigor, and purpose.</p>
+          </div>
+          <div className="programs-grid">
+            {programs.map((p, i) => (
+              <div key={i} className="program-card reveal" style={{ transitionDelay: `${i * 100}ms` }}>
+                <div className="program-card-header" style={{ background: p.color }} />
+                <div className="program-card-body">
+                  <div className="program-level">{p.step} — {p.level}</div>
+                  <h3>{p.title}</h3>
+                  <p>{p.desc}</p>
+                  <Link to="/academics" className="news-link">Explore Academics →</Link>
+                </div>
               </div>
-              <div className="principal-content">
-                <div className="section-tag" style={{ marginBottom: 24 }}>Principal's Message</div>
-                <p className="principal-message-text">
-                  "At Global Academy Secondary School, we believe that every child is unique and carries infinite potential.
-                  Our mission is not merely to impart knowledge but to ignite a lifelong love for learning,
-                  to build resilient character, and to prepare our students to lead with integrity in an
-                  ever-changing world.
-                  <br /><br />
-                  Over the past 30 years, we have witnessed thousands of students transform into confident,
-                  compassionate, and capable individuals. This is our greatest achievement and our constant
-                  inspiration. I invite you to be a part of the Global Academy family."
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* WHY CHOOSE */}
+      <section className="section section-cream">
+        <div className="container">
+          <div className="section-header centered reveal">
+            <span className="section-eyebrow">Why Global Academy</span>
+            <h2 className="section-title">The Global Academy Difference</h2>
+            <p className="section-subtitle">What makes us the trusted choice for thousands of families across Kathmandu Valley.</p>
+          </div>
+          <div className="why-grid">
+            {whyChoose.map((item, i) => (
+              <div key={item.title} className="why-card reveal" style={{ transitionDelay: `${i * 100}ms` }}>
+                <div className="why-number">{item.number}</div>
+                <h3>{item.title}</h3>
+                <p>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CAMPUS LIFE GALLERY */}
+      <section className="section section-navy">
+        <div className="container">
+          <div className="section-header centered reveal">
+            <span className="section-eyebrow" style={{ color: 'var(--gold-light)' }}>Campus Life</span>
+            <h2 className="section-title">A Day at Global Academy</h2>
+            <p className="section-subtitle">A balance of structured learning, creative exploration, physical activity, and joyful discovery.</p>
+          </div>
+          <div className="mosaic-grid">
+            {galleryImages.map((img, i) => (
+              <div key={i} className={`mosaic-item reveal ${img.large ? 'large' : ''}`} style={{ transitionDelay: `${i * 100}ms` }}>
+                <img src={img.src} alt={img.title} />
+                <div className="mosaic-overlay"><span>{img.title}</span></div>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '48px' }}>
+            <Link to="/gallery" className="btn btn-outline-white">View Full Gallery</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="section section-white">
+        <div className="container">
+          <div className="section-header centered reveal">
+            <span className="section-eyebrow">Voices</span>
+            <h2 className="section-title">What Parents & Alumni Say</h2>
+          </div>
+          <div className="testimonial-carousel reveal">
+            <div className="testimonial-carousel-inner">
+              <div className="testimonial-quote-mark">"</div>
+              <p className="testimonial-quote-text">{testimonialsData[activeTestimonial].text}</p>
+              <div className="testimonial-author-row">
+                <div className="testimonial-avatar-circle" style={{ background: 'var(--gold-pale)', color: 'var(--gold)' }}>
+                  {testimonialsData[activeTestimonial].initial}
+                </div>
+                <div>
+                  <div className="testimonial-author-name">{testimonialsData[activeTestimonial].name}</div>
+                  <div className="testimonial-author-role">{testimonialsData[activeTestimonial].role}</div>
+                </div>
+              </div>
+            </div>
+            <div className="testimonial-nav">
+              <div className="testimonial-dots">
+                {testimonialsData.map((_, i) => (
+                  <button
+                    key={i}
+                    className={`testimonial-dot ${i === activeTestimonial ? 'active' : ''}`}
+                    onClick={() => setActiveTestimonial(i)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 32 }}>
+            <Link to="/testimonials" className="btn btn-outline">Read All Testimonials</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* LATEST NOTICES */}
+      <section className="section section-cream">
+        <div className="container">
+          <div className="section-header reveal">
+            <span className="section-eyebrow">Notice Board</span>
+            <h2 className="section-title">Important Notices</h2>
+          </div>
+          <div style={{ maxWidth: 900, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {pinnedNotices.map((notice, i) => (
+              <div key={notice.id} className="card reveal notice-card" style={{ padding: 0, overflow: 'hidden', transitionDelay: `${i * 80}ms` }}>
+                <div className="notice-card-inner">
+                  <div className="notice-date-badge">
+                    <span className="notice-date-day">{new Date(notice.date).getDate()}</span>
+                    <span className="notice-date-month">{new Date(notice.date).toLocaleDateString('en-US', { month: 'short' })}</span>
+                  </div>
+                  <div className="notice-content">
+                    <div className="notice-header">
+                      <span className="notice-pin-badge">Pinned Notice</span>
+                    </div>
+                    <h3 className="notice-title">{notice.title}</h3>
+                    <p className="notice-text">{notice.content}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 32 }}>
+            <Link to="/notices" className="btn btn-outline">View All Notices</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* NEWS */}
+      <section className="section section-white">
+        <div className="container">
+          <div className="section-header reveal">
+            <span className="section-eyebrow">Latest Updates</span>
+            <h2 className="section-title">News & Announcements</h2>
+          </div>
+          <div className="news-grid">
+            {featuredNews.map((news, i) => (
+              <article key={news.id} className="news-card reveal" style={{ transitionDelay: `${i * 100}ms` }}>
+                <img src={news.image} alt={news.title} className="news-card-img" />
+                <div className="news-card-body">
+                  <div className="news-card-meta">
+                    <span className="news-category">{news.category}</span>
+                    <span className="news-date">{new Date(news.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                  </div>
+                  <h3>{news.title}</h3>
+                  <p>{news.excerpt}</p>
+                  <Link to={`/news/${news.id}`} className="news-link">Read Full Story →</Link>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '48px' }}>
+            <Link to="/news" className="btn btn-outline">View All News</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* UPCOMING EVENTS */}
+      <section className="section section-cream">
+        <div className="container">
+          <div className="section-header reveal">
+            <span className="section-eyebrow">Calendar</span>
+            <h2 className="section-title">Upcoming Events</h2>
+          </div>
+          <div className="programs-grid">
+            {eventsData.slice(0, 3).map(event => (
+              <div key={event.id} className="card reveal" style={{ padding: '28px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+                  <div style={{
+                    width: 60, height: 60, borderRadius: 12, background: 'var(--gold-pale)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    color: 'var(--gold)', fontWeight: 700
+                  }}>
+                    <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{new Date(event.date).getDate()}</span>
+                    <span style={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>{new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--gold)' }}>{event.category}</span>
+                    <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{event.title}</h3>
+                  </div>
+                </div>
+                <p style={{ color: 'var(--gray-500)', fontSize: '0.92rem', lineHeight: 1.6 }}>{event.description}</p>
+                <p style={{ color: 'var(--gray-500)', fontSize: '0.85rem', marginTop: 12 }}>
+                  <span style={{ fontWeight: 600, color: 'var(--navy)' }}>Time:</span> {event.time} &nbsp;·&nbsp; <span style={{ fontWeight: 600, color: 'var(--navy)' }}>Venue:</span> {event.location}
                 </p>
-                <div className="principal-divider"></div>
-                <div className="principal-name">Dr. Rajan Kumar Sharma</div>
-                <div className="principal-role">Principal, Global Academy Secondary School</div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 20, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Ph.D. Education</span>
-                  <span style={{ color: 'var(--border)' }}>•</span>
-                  <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>25+ Years Experience</span>
-                </div>
-                <Link to="/about" className="btn btn-primary" style={{ marginTop: 28, width: 'fit-content' }}>
-                  Learn More About Us <ArrowRight size={16} />
-                </Link>
               </div>
-            </div>
+            ))}
           </div>
-        </section>
-      </FadeInSection>
+          <div style={{ textAlign: 'center', marginTop: '48px' }}>
+            <Link to="/events" className="btn btn-outline">View All Events</Link>
+          </div>
+        </div>
+      </section>
 
-      {/* ── LATEST NEWS ── */}
-      <FadeInSection>
-        <section className="section" style={{ background: 'var(--bg)' }}>
-          <div className="container">
-            <div className="section-header">
-              <div className="section-tag">Stay Updated</div>
-              <h2 className="section-title">Latest News & Announcements</h2>
-              <p className="section-subtitle">
-                Stay informed about the latest happenings, achievements, and announcements from Global Academy Secondary School.
-              </p>
-            </div>
-            <div className="grid-3">
-              {featuredNews.map((news) => (
-                <article key={news.id} className="news-card">
-                  <img
-                    src={news.image}
-                    alt={news.title}
-                    className="news-card-img"
-                    loading="lazy"
-                  />
-                  <div className="news-card-body">
-                    <div className="news-card-category">{news.category}</div>
-                    <div className="news-card-date">
-                      <Calendar size={13} />
-                      {formatDate(news.date)}
-                    </div>
-                    <h3 className="news-card-title">{news.title}</h3>
-                    <p className="news-card-excerpt">{news.excerpt}</p>
-                    <Link to={`/news/${news.id}`} className="news-card-link">
-                      Read Full Story <ArrowRight size={14} />
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
-            <div style={{ textAlign: 'center', marginTop: 48 }}>
-              <Link to="/news" className="btn btn-outline">
-                View All News <ArrowRight size={16} />
-              </Link>
-            </div>
+      {/* CTA */}
+      <section className="cta-banner">
+        <div className="cta-content">
+          <span className="section-eyebrow" style={{ color: 'var(--gold-light)', justifyContent: 'center' }}>Admissions 2025–26</span>
+          <h2>Begin Your Child's Journey to Excellence</h2>
+          <p>Limited seats remain for the upcoming academic year. Schedule a visit or apply today to secure your child's future.</p>
+          <div className="cta-actions">
+            <Link to="/admissions" className="btn btn-gold btn-lg">Apply for Admission</Link>
+            <Link to="/contact" className="btn btn-outline-white btn-lg">Schedule a Visit</Link>
           </div>
-        </section>
-      </FadeInSection>
-
-      {/* ── UPCOMING EVENTS ── */}
-      <FadeInSection>
-        <section className="section" style={{ background: 'var(--surface)' }}>
-          <div className="container">
-            <div className="flex-between" style={{ marginBottom: 48, flexWrap: 'wrap', gap: 16 }}>
-              <div>
-                <div className="section-tag" style={{ justifyContent: 'flex-start' }}>Calendar</div>
-                <h2 className="section-title" style={{ marginBottom: 0 }}>Upcoming Events</h2>
-              </div>
-              <Link to="/news" className="btn btn-outline btn-sm">
-                View All Events <ChevronRight size={16} />
-              </Link>
-            </div>
-            <div className="grid-2">
-              {upcomingEvents.map((event) => (
-                <div key={event.id} className="event-card">
-                  <div className="event-date-box">
-                    <div className="event-day">{getDay(event.date)}</div>
-                    <div className="event-month">{getMonth(event.date)}</div>
-                  </div>
-                  <div className="event-content">
-                    <div className="event-title">{event.title}</div>
-                    <div className="event-meta">
-                      <div className="event-meta-item">
-                        <Clock size={12} />
-                        {event.time}
-                      </div>
-                      <div className="event-meta-item">
-                        <MapPin size={12} />
-                        {event.location}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </FadeInSection>
-
-      {/* ── FACILITIES ── */}
-      <FadeInSection>
-        <section className="section" style={{ background: 'var(--bg)' }}>
-          <div className="container">
-            <div className="section-header">
-              <div className="section-tag">Our Facilities</div>
-              <h2 className="section-title">World-Class Learning Environment</h2>
-              <p className="section-subtitle">
-                Our campus is equipped with modern facilities to provide an enriching educational experience for every student.
-              </p>
-            </div>
-            <div className="grid-3">
-              {facilitiesData.slice(0, 3).map((facility) => (
-                <div key={facility.id} className="facility-card">
-                  <img
-                    src={facility.image}
-                    alt={facility.title}
-                    className="facility-card-img"
-                    loading="lazy"
-                  />
-                  <div className="facility-card-overlay" />
-                  <div className="facility-card-body">
-                    <h3 className="facility-title">{facility.title}</h3>
-                    <p className="facility-desc">{facility.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ textAlign: 'center', marginTop: 48 }}>
-              <Link to="/facilities" className="btn btn-outline">
-                Explore All Facilities <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-        </section>
-      </FadeInSection>
-
-      {/* ── WHY CHOOSE US ── */}
-      <FadeInSection>
-        <section className="section why-section">
-          <div className="container why-content">
-            <div className="section-header">
-              <div className="section-tag">Why Global Academy</div>
-              <h2 className="section-title">The Global Academy Difference</h2>
-              <p className="section-subtitle">
-                What makes us the preferred choice for thousands of families across Kathmandu Valley.
-              </p>
-            </div>
-            <div className="grid-3">
-              {whyChooseData.map((item, i) => (
-                <div key={i} className="why-item">
-                  <h4 className="why-item-title">{item.title}</h4>
-                  <p className="why-item-desc">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </FadeInSection>
-
-      {/* ── TESTIMONIALS ── */}
-      <FadeInSection>
-        <section className="section" style={{ background: 'var(--bg)' }}>
-          <div className="container">
-            <div className="section-header">
-              <div className="section-tag">Testimonials</div>
-              <h2 className="section-title">What Parents & Alumni Say</h2>
-              <p className="section-subtitle">
-                The trust of our community is our greatest achievement.
-              </p>
-            </div>
-            <div className="grid-3">
-              {testimonialsData.map((t) => (
-                <div key={t.id} className="testimonial-card">
-                  <div className="stars">
-                    {[...Array(t.rating)].map((_, i) => (
-                      <Star key={i} size={15} fill="var(--accent)" color="var(--accent)" />
-                    ))}
-                  </div>
-                  <div className="testimonial-quote">"</div>
-                  <p className="testimonial-text">{t.text}</p>
-                  <div className="testimonial-author">
-                    <div className="testimonial-avatar">{t.initial}</div>
-                    <div>
-                      <div className="testimonial-name">{t.name}</div>
-                      <div className="testimonial-role">{t.role}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </FadeInSection>
-
-      {/* ── GALLERY PREVIEW ── */}
-      <FadeInSection>
-        <section className="section" style={{ background: 'var(--surface)' }}>
-          <div className="container">
-            <div className="section-header">
-              <div className="section-tag">Photo Gallery</div>
-              <h2 className="section-title">Life at Global Academy</h2>
-              <p className="section-subtitle">
-                A glimpse into our vibrant campus life, facilities, and student achievements.
-              </p>
-            </div>
-            <div className="gallery-grid">
-              {[
-                '/images/campus-aerial.jpg',
-                '/images/library.jpg',
-                '/images/computer-lab.jpg',
-                '/images/science-lab.jpg',
-                '/images/sports.jpg',
-              ].map((img, i) => (
-                <div key={i} className="gallery-item">
-                  <img src={img} alt={`Gallery ${i + 1}`} loading="lazy" />
-                  <div className="gallery-overlay">
-                    <div style={{ color: 'white', display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.9rem', fontWeight: 600 }}>
-                      <CheckCircle size={18} />
-                      View Photo
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ textAlign: 'center', marginTop: 48 }}>
-              <Link to="/gallery" className="btn btn-outline">
-                View Full Gallery <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-        </section>
-      </FadeInSection>
-
-      {/* ── CTA ── */}
-      <FadeInSection>
-        <section className="section cta-section">
-          <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-            <div className="section-tag" style={{ justifyContent: 'center' }}>
-              Admissions 2025–26
-            </div>
-            <h2 className="cta-title">
-              Begin Your Child's Journey<br />to Excellence Today
-            </h2>
-            <p className="cta-subtitle">
-              Join the Global Academy family. Limited seats available for the 2025-26 academic year.
-              Early applications are encouraged for all grades.
-            </p>
-            <div className="cta-actions">
-              <Link to="/admissions" className="btn btn-accent btn-lg">
-                Apply for Admission <ArrowRight size={18} />
-              </Link>
-              <Link to="/contact" className="btn btn-outline-white btn-lg">
-                Schedule a Campus Visit
-              </Link>
-            </div>
-            <p style={{ marginTop: 24, fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)' }}>
-              Questions? Call us: 01-5201144 | info@lalitpurglobalacademy.edu.np
-            </p>
-          </div>
-        </section>
-      </FadeInSection>
-    </>
+        </div>
+      </section>
+    </main>
   );
 }

@@ -1,174 +1,107 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin, ArrowRight, Search } from 'lucide-react';
-import { newsData, eventsData } from '../services/mockData';
-
-function FadeInSection({ children }: { children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) entry.target.classList.add('is-visible'); },
-      { threshold: 0.05 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-  return <div ref={ref} className="fade-in-section">{children}</div>;
-}
+import { useReveal } from '../hooks/useReveal';
+import { newsData } from '../data/schoolData';
 
 const categories = ['All', 'Academic Achievement', 'Events', 'Infrastructure', 'Sports', 'Admissions'];
 
 export default function News() {
-  const [activeTab, setActiveTab] = useState<'news' | 'events'>('news');
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [search, setSearch] = useState('');
+  useReveal();
+  const [category, setCategory] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredNews = newsData.filter(n => {
-    const matchCat = activeCategory === 'All' || n.category === activeCategory;
-    const matchSearch = n.title.toLowerCase().includes(search.toLowerCase()) ||
-      n.excerpt.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
+  const featured = newsData.find(n => n.featured) || newsData[0];
+
+  const filtered = newsData.filter(n => {
+    const matchesCategory = category === 'All' || n.category === category;
+    const matchesSearch = n.title.toLowerCase().includes(searchTerm.toLowerCase()) || n.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
   });
-
-  const formatDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  const getDay = (d: string) => new Date(d).getDate();
-  const getMonth = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short' });
 
   return (
     <>
       <div className="page-hero">
-        <div className="page-hero-content">
-          <nav className="breadcrumb" style={{ marginBottom: 16 }}>
-            <Link to="/" className="breadcrumb-item">Home</Link>
-            <span className="breadcrumb-sep">›</span>
-            <span className="breadcrumb-item active">News & Events</span>
-          </nav>
-          <h1 className="page-hero-title">News & Events</h1>
-          <p className="page-hero-subtitle">Stay up to date with the latest happenings at Global Academy Secondary School.</p>
+        <div className="container page-hero-content">
+          <nav className="breadcrumb"><Link to="/">Home</Link><span>/</span><span>News</span></nav>
+          <h1 className="page-hero-title">News & Updates</h1>
+          <p className="page-hero-subtitle">Stay connected with stories, achievements, milestones, and announcements from Global Academy.</p>
         </div>
       </div>
 
-      <section className="section">
+      <section className="section section-cream">
         <div className="container">
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 40, borderBottom: '2px solid var(--border)', paddingBottom: 0 }}>
-            {['news', 'events'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab as 'news' | 'events')}
-                style={{
-                  padding: '12px 28px',
-                  fontSize: '0.9375rem',
-                  fontWeight: 600,
-                  background: 'none',
-                  border: 'none',
-                  borderBottom: `3px solid ${activeTab === tab ? 'var(--primary)' : 'transparent'}`,
-                  color: activeTab === tab ? 'var(--primary)' : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  marginBottom: -2,
-                  transition: 'var(--transition)',
-                  textTransform: 'capitalize'
-                }}
-              >
-                {tab === 'news' ? '📰 Latest News' : '📅 Upcoming Events'}
-              </button>
+          {/* Featured Article Card */}
+          {category === 'All' && !searchTerm && featured && (
+            <div className="card reveal" style={{ marginBottom: 48, overflow: 'hidden', padding: 0 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', alignItems: 'center' }}>
+                <div style={{ height: '100%', minHeight: 340 }}>
+                  <img src={featured.image} alt={featured.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div style={{ padding: 40 }}>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14 }}>
+                    <span style={{ background: 'var(--gold)', color: 'var(--navy)', padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>⭐ Featured</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--gray-500)' }}>{new Date(featured.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                  </div>
+                  <h2 style={{ fontSize: '1.6rem', marginBottom: 14, color: 'var(--navy)', lineHeight: 1.3 }}>{featured.title}</h2>
+                  <p style={{ color: 'var(--gray-500)', lineHeight: 1.7, marginBottom: 24, fontSize: '0.95rem' }}>{featured.excerpt}</p>
+                  <Link to={`/news/${featured.id}`} className="btn btn-navy">Read Full Story →</Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Search & Filter Bar */}
+          <div className="reveal" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: 40 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {categories.map(c => {
+                const count = c === 'All' ? newsData.length : newsData.filter(n => n.category === c).length;
+                return (
+                  <button
+                    key={c}
+                    onClick={() => setCategory(c)}
+                    className={`btn btn-sm ${category === c ? 'btn-navy' : 'btn-outline'}`}
+                    style={{ borderRadius: 'var(--radius-full)' }}
+                  >
+                    {c} <span style={{ opacity: 0.7, fontSize: '0.75rem' }}>({count})</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div>
+              <input
+                type="text"
+                placeholder="Search articles..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="form-input"
+                style={{ padding: '10px 18px', width: 240, borderRadius: 'var(--radius-full)' }}
+              />
+            </div>
+          </div>
+
+          {/* News Grid */}
+          <div className="news-grid">
+            {filtered.map((news, i) => (
+              <article key={news.id} className="news-card reveal" style={{ transitionDelay: `${i * 70}ms` }}>
+                <img src={news.image} alt={news.title} className="news-card-img" />
+                <div className="news-card-body">
+                  <div className="news-card-meta">
+                    <span className="news-category">{news.category}</span>
+                    <span className="news-date">{new Date(news.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                  </div>
+                  <h3>{news.title}</h3>
+                  <p>{news.excerpt}</p>
+                  <Link to={`/news/${news.id}`} className="news-link">Read Full Story →</Link>
+                </div>
+              </article>
             ))}
           </div>
 
-          {activeTab === 'news' ? (
-            <>
-              {/* Filters */}
-              <div style={{ display: 'flex', gap: 16, marginBottom: 40, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div className="gallery-tabs" style={{ margin: 0 }}>
-                  {categories.map(cat => (
-                    <button
-                      key={cat}
-                      className={`gallery-tab ${activeCategory === cat ? 'active' : ''}`}
-                      onClick={() => setActiveCategory(cat)}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-                <div style={{ position: 'relative' }}>
-                  <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <input
-                    type="text"
-                    placeholder="Search news..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    className="form-input"
-                    style={{ paddingLeft: 40, width: 260 }}
-                  />
-                </div>
-              </div>
-
-              {filteredNews.length === 0 ? (
-                <div className="empty-state">
-                  <div className="empty-state-icon">📰</div>
-                  <h3 className="empty-state-title">No news found</h3>
-                  <p className="empty-state-desc">Try adjusting your search or category filter.</p>
-                </div>
-              ) : (
-                <div className="grid-3">
-                  {filteredNews.map(news => (
-                    <FadeInSection key={news.id}>
-                      <article className="news-card">
-                        <img src={news.image} alt={news.title} className="news-card-img" loading="lazy" />
-                        <div className="news-card-body">
-                          <div className="news-card-category">{news.category}</div>
-                          <div className="news-card-date">
-                            <Calendar size={13} /> {formatDate(news.date)}
-                          </div>
-                          <h3 className="news-card-title">{news.title}</h3>
-                          <p className="news-card-excerpt">{news.excerpt}</p>
-                          <Link to={`/news/${news.id}`} className="news-card-link">
-                            Read Full Story <ArrowRight size={14} />
-                          </Link>
-                        </div>
-                      </article>
-                    </FadeInSection>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              {/* Events List */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {eventsData.map(event => (
-                  <FadeInSection key={event.id}>
-                    <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', padding: '24px 28px', display: 'flex', gap: 24, alignItems: 'flex-start', transition: 'var(--transition)' }}
-                      onMouseEnter={e => { e.currentTarget.style.boxShadow = 'var(--shadow-md)'; e.currentTarget.style.borderColor = 'var(--secondary)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}
-                    >
-                      <div className="event-date-box" style={{ flexShrink: 0 }}>
-                        <div className="event-day">{getDay(event.date)}</div>
-                        <div className="event-month">{getMonth(event.date)}</div>
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
-                          <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: 'var(--text-primary)' }}>{event.title}</h3>
-                          <span className="badge badge-info">{event.category}</span>
-                        </div>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.65 }}>{event.description}</p>
-                        <div className="event-meta">
-                          <div className="event-meta-item">
-                            <Clock size={13} /> {event.time}
-                          </div>
-                          <div className="event-meta-item">
-                            <MapPin size={13} /> {event.location}
-                          </div>
-                          <div className="event-meta-item">
-                            <Calendar size={13} /> {formatDate(event.date)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </FadeInSection>
-                ))}
-              </div>
-            </>
+          {filtered.length === 0 && (
+            <div className="card reveal" style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--gray-500)' }}>
+              <p style={{ fontSize: '1.2rem', marginBottom: 12 }}>No articles found matching your criteria.</p>
+              <button onClick={() => { setCategory('All'); setSearchTerm(''); }} className="btn btn-navy btn-sm">Clear Filters</button>
+            </div>
           )}
         </div>
       </section>

@@ -1,14 +1,27 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { Phone, Mail, ChevronRight } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import QuickSearch from './QuickSearch';
 
-const navLinks = [
+const navItems = [
   { label: 'Home', path: '/' },
   { label: 'About', path: '/about' },
   { label: 'Academics', path: '/academics' },
   { label: 'Admissions', path: '/admissions' },
   { label: 'Facilities', path: '/facilities' },
-  { label: 'News & Events', path: '/news' },
+  { label: 'Faculty', path: '/faculty' },
+  {
+    label: 'Information',
+    path: '/news',
+    children: [
+      { label: 'News', path: '/news' },
+      { label: 'Events', path: '/events' },
+      { label: 'Notice Board', path: '/notices' },
+      { label: 'Achievements', path: '/achievements' },
+      { label: 'Testimonials', path: '/testimonials' },
+      { label: 'Downloads', path: '/downloads' }
+    ]
+  },
   { label: 'Gallery', path: '/gallery' },
   { label: 'Contact', path: '/contact' },
 ];
@@ -16,6 +29,8 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -24,74 +39,85 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
 
   return (
     <>
+      <QuickSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
       <header className="site-header">
-        {/* Top Bar */}
         <div className="topbar">
-          <div className="topbar-inner">
+          <div className="container topbar-inner">
             <div className="topbar-links">
-              <div className="topbar-item">
-                <Phone size={13} />
-                <span>01-5201144</span>
-              </div>
-              <div className="topbar-item">
-                <Mail size={13} />
-                <span>info@lalitpurglobalacademy.edu.np</span>
-              </div>
+              <span>Tel: 01-5201144</span>
+              <span>info@lalitpurglobalacademy.edu.np</span>
+              <span>Sun–Fri: 9:00 AM – 4:00 PM</span>
             </div>
             <div className="topbar-links">
-              <Link to="/admissions" style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.8125rem' }}>Apply Now</Link>
-              <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
-              <Link to="/login" style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.8125rem' }}>Admin Login</Link>
+              <Link to="/notices">Notices</Link>
+              <Link to="/admissions">Admissions 2025–26</Link>
+              <Link to="/contact">Contact</Link>
             </div>
           </div>
         </div>
 
-        {/* Navbar */}
         <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
           <div className="navbar-inner">
-            {/* Logo */}
             <Link to="/" className="navbar-logo">
-              <img src="/images/logo.jpg" alt="Global Academy Logo" className="navbar-logo-img" />
-              <div className="navbar-logo-text">
+              <img src="/images/logo.jpg" alt="Global Academy" className="navbar-logo-img" />
+              <div>
                 <span className="navbar-logo-name">Global Academy</span>
                 <span className="navbar-logo-tagline">Secondary School</span>
               </div>
             </Link>
 
-            {/* Desktop Nav */}
             <nav className="navbar-nav">
-              {navLinks.map((link) => (
-                <NavLink
-                  key={link.path}
-                  to={link.path}
-                  end={link.path === '/'}
-                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                >
-                  {link.label}
-                </NavLink>
-              ))}
+              {navItems.map(item =>
+                item.children ? (
+                  <div
+                    key={item.label}
+                    className="nav-dropdown"
+                    onMouseEnter={() => setOpenDropdown(item.label)}
+                    onMouseLeave={() => setOpenDropdown(null)}
+                  >
+                    <NavLink to={item.path} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                      {item.label} <ChevronDown size={14} />
+                    </NavLink>
+                    {openDropdown === item.label && (
+                      <div className="dropdown-menu">
+                        {item.children.map(child => (
+                          <Link key={child.path} to={child.path} className="dropdown-item">{child.label}</Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.path === '/'}
+                    className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                  >
+                    {item.label}
+                  </NavLink>
+                )
+              )}
             </nav>
 
-            {/* Actions */}
             <div className="navbar-actions">
-              <Link to="/admissions" className="btn btn-accent btn-sm" style={{ display: 'flex' }}>
-                Apply Now
-              </Link>
               <button
-                className={`hamburger ${mobileOpen ? 'open' : ''}`}
-                onClick={() => setMobileOpen(!mobileOpen)}
-                aria-label="Toggle menu"
+                onClick={() => setSearchOpen(true)}
+                className="btn btn-sm btn-outline"
+                style={{ padding: '8px 14px', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                title="Quick search (Cmd+K)"
               >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <span>Search</span>
+              </button>
+              <Link to="/admissions" className="btn btn-gold btn-sm">Apply Now</Link>
+              <button className="hamburger" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -101,50 +127,33 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* Mobile Menu */}
       <div className={`mobile-menu ${mobileOpen ? 'open' : ''}`}>
-        {navLinks.map((link) => (
-          <NavLink
-            key={link.path}
-            to={link.path}
-            end={link.path === '/'}
-            className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`}
-            onClick={() => setMobileOpen(false)}
+        <div style={{ paddingBottom: 16, borderBottom: '1px solid var(--gray-100)', marginBottom: 12 }}>
+          <button
+            onClick={() => { setMobileOpen(false); setSearchOpen(true); }}
+            className="btn btn-outline btn-sm"
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              {link.label}
-              <ChevronRight size={16} />
-            </div>
-          </NavLink>
-        ))}
-        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <Link
-            to="/admissions"
-            className="btn btn-accent w-full"
-            onClick={() => setMobileOpen(false)}
-          >
-            Apply for Admission
-          </Link>
-          <Link
-            to="/login"
-            className="btn btn-outline w-full"
-            onClick={() => setMobileOpen(false)}
-          >
-            Admin Login
-          </Link>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span>Search Pages & Notices...</span>
+          </button>
         </div>
-        <div style={{ marginTop: 20, padding: '16px 0', borderTop: '1px solid var(--border)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              <Phone size={14} />
-              01-5201144
+        {navItems.map(item =>
+          item.children ? (
+            <div key={item.label} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+              <div style={{ padding: '14px 0', fontWeight: 700, color: 'var(--navy)' }}>{item.label}</div>
+              <div style={{ paddingLeft: 16, display: 'flex', flexDirection: 'column' }}>
+                {item.children.map(child => (
+                  <Link key={child.path} to={child.path} className="mobile-nav-link" style={{ fontSize: '1rem' }} onClick={() => setMobileOpen(false)}>{child.label}</Link>
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              <Mail size={14} />
-              info@lalitpurglobalacademy.edu.np
-            </div>
-          </div>
-        </div>
+          ) : (
+            <NavLink key={item.path} to={item.path} end={item.path === '/'} className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>
+              {item.label}
+            </NavLink>
+          )
+        )}
       </div>
 
       <div className="site-header-spacer" aria-hidden="true"></div>

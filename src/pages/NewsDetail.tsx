@@ -1,136 +1,115 @@
+import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Calendar, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
-import { newsData } from '../services/mockData';
+import { useReveal } from '../hooks/useReveal';
+import { newsData } from '../data/schoolData';
 
 export default function NewsDetail() {
+  useReveal();
   const { id } = useParams();
   const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
+
   const news = newsData.find(n => n.id === Number(id));
   const related = newsData.filter(n => n.id !== Number(id)).slice(0, 3);
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 3000);
+  };
 
   if (!news) {
     return (
       <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
-        <div style={{ fontSize: '4rem' }}>📰</div>
-        <h2 style={{ color: 'var(--primary)' }}>News article not found</h2>
-        <Link to="/news" className="btn btn-primary">Back to News</Link>
+        <h2 style={{ color: 'var(--navy)' }}>News article not found</h2>
+        <Link to="/news" className="btn btn-navy">Back to News</Link>
       </div>
     );
   }
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
   return (
     <>
-      <div className="page-hero" style={{ paddingBottom: 0, minHeight: 'auto' }}>
-        <div className="page-hero-content">
-          <nav className="breadcrumb" style={{ marginBottom: 16 }}>
-            <Link to="/" className="breadcrumb-item">Home</Link>
-            <span className="breadcrumb-sep">›</span>
-            <Link to="/news" className="breadcrumb-item">News & Events</Link>
-            <span className="breadcrumb-sep">›</span>
-            <span className="breadcrumb-item active">{news.category}</span>
+      <div className="page-hero" style={{ paddingBottom: 60 }}>
+        <div className="container page-hero-content">
+          <nav className="breadcrumb">
+            <Link to="/">Home</Link><span>/</span>
+            <Link to="/news">News</Link><span>/</span>
+            <span>{news.category}</span>
           </nav>
-          <div className="news-card-category" style={{ display: 'inline-flex', marginBottom: 16 }}>
-            <Tag size={12} /> {news.category}
-          </div>
-          <h1 className="page-hero-title" style={{ maxWidth: 800 }}>{news.title}</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16, color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
-            <Calendar size={14} />
-            {formatDate(news.date)}
-          </div>
+          <h1 className="page-hero-title">{news.title}</h1>
         </div>
       </div>
 
-      <section className="section">
+      <section className="section section-cream">
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 48, alignItems: 'start' }}>
-            {/* Main Content */}
-            <div>
-              <button onClick={() => navigate(-1)} className="btn btn-outline btn-sm" style={{ marginBottom: 32 }}>
-                <ArrowLeft size={16} /> Back
-              </button>
-
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 40, alignItems: 'start' }}>
+            <article className="card reveal" style={{ padding: 40 }}>
               <img
                 src={news.image}
                 alt={news.title}
-                style={{ width: '100%', borderRadius: 'var(--radius-xl)', marginBottom: 40, maxHeight: 480, objectFit: 'cover', boxShadow: 'var(--shadow-lg)' }}
+                style={{ width: '100%', height: 380, objectFit: 'cover', borderRadius: 'var(--radius-lg)', marginBottom: 28 }}
               />
 
-              <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-xl)', padding: '48px', border: '1px solid var(--border)' }}>
-                <p style={{ fontSize: '1.125rem', color: 'var(--text-primary)', fontWeight: 500, lineHeight: 1.8, marginBottom: 28, borderLeft: '4px solid var(--accent)', paddingLeft: 20, fontStyle: 'italic' }}>
-                  {news.excerpt}
-                </p>
-                <div style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 2 }}>
-                  {news.content.split('\n').map((paragraph, i) => {
-                    if (paragraph.startsWith('•')) {
-                      return (
-                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
-                          <span style={{ width: 6, height: 6, background: 'var(--accent)', borderRadius: '50%', display: 'block', flexShrink: 0, marginTop: 12 }} />
-                          <span>{paragraph.slice(2)}</span>
-                        </div>
-                      );
-                    }
-                    if (paragraph.trim() === '') return <div key={i} style={{ height: 8 }} />;
-                    return <p key={i} style={{ marginBottom: 16 }}>{paragraph}</p>;
-                  })}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid var(--gray-100)' }}>
+                <div style={{ display: 'flex', gap: 14, fontSize: '0.85rem', color: 'var(--gray-500)', alignItems: 'center' }}>
+                  <span style={{ color: 'var(--gold)', fontWeight: 700, textTransform: 'uppercase', background: 'var(--gold-pale)', padding: '4px 10px', borderRadius: 'var(--radius-full)' }}>
+                    {news.category}
+                  </span>
+                  <span>{new Date(news.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                  <span>By {news.author || 'School Administration'}</span>
                 </div>
 
-                <div style={{ marginTop: 40, paddingTop: 32, borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ width: 44, height: 44, background: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', fontWeight: 700 }}>
-                      SA
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9375rem' }}>Global Academy Secondary School</div>
-                      <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Published: {formatDate(news.date)}</div>
-                    </div>
-                  </div>
-                  <Link to="/news" className="btn btn-outline btn-sm">
-                    View All News <ArrowRight size={14} />
-                  </Link>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={handleShare} className="btn btn-outline btn-sm" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>
+                    {copied ? 'Copied Link' : 'Share Article'}
+                  </button>
                 </div>
               </div>
-            </div>
+
+              <div style={{ color: 'var(--charcoal)', lineHeight: 1.9, fontSize: '1.02rem', whiteSpace: 'pre-line' }}>
+                {news.content}
+              </div>
+
+              {/* Author Footer */}
+              <div style={{ marginTop: 40, paddingTop: 24, borderTop: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: 16, background: 'var(--cream)', padding: 20, borderRadius: 'var(--radius-md)' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--navy)', color: 'var(--gold-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                  GA
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--navy)' }}>Global Academy Media & Communications</h4>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: 'var(--gray-500)' }}>Official publications and announcements division.</p>
+                </div>
+              </div>
+            </article>
 
             {/* Sidebar */}
-            <div>
-              {/* Related News */}
-              <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '24px', border: '1px solid var(--border)', marginBottom: 24 }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 20, paddingBottom: 12, borderBottom: '2px solid var(--accent)', display: 'inline-block' }}>
-                  Related News
-                </h3>
+            <aside className="reveal" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div className="card" style={{ padding: 24 }}>
+                <h3 style={{ fontSize: '1.2rem', marginBottom: 18, color: 'var(--navy)' }}>Related News</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {related.map(r => (
-                    <Link key={r.id} to={`/news/${r.id}`} style={{ display: 'flex', gap: 12, textDecoration: 'none', transition: 'var(--transition)' }}>
-                      <img src={r.image} alt={r.title} style={{ width: 72, height: 72, borderRadius: 'var(--radius-sm)', objectFit: 'cover', flexShrink: 0 }} />
-                      <div>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 4 }}>{r.title}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(r.date)}</div>
-                      </div>
-                    </Link>
+                  {related.map(n => (
+                    <div
+                      key={n.id}
+                      style={{ padding: 14, borderRadius: 'var(--radius-sm)', background: 'var(--cream)', cursor: 'pointer', transition: 'var(--transition)' }}
+                      onClick={() => navigate(`/news/${n.id}`)}
+                    >
+                      <span style={{ fontSize: '0.72rem', color: 'var(--gold)', fontWeight: 700, textTransform: 'uppercase' }}>{n.category}</span>
+                      <h4 style={{ fontSize: '0.95rem', margin: '4px 0 6px', color: 'var(--navy)' }}>{n.title}</h4>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--gray-500)' }}>{new Date(n.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    </div>
                   ))}
                 </div>
               </div>
 
-              {/* Quick Links */}
-              <div style={{ background: 'var(--primary)', borderRadius: 'var(--radius-lg)', padding: '24px', color: 'white' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: 16 }}>Quick Links</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {[
-                    { label: 'Apply for Admission', path: '/admissions' },
-                    { label: 'Download Prospectus', path: '/admissions' },
-                    { label: 'Academic Calendar', path: '/academics' },
-                    { label: 'Contact Us', path: '/contact' },
-                  ].map((link, i) => (
-                    <Link key={i} to={link.path} style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 8, transition: 'var(--transition)' }}>
-                      <ArrowRight size={14} color="var(--accent)" />
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
+              {/* Quick Links Banner */}
+              <div className="card" style={{ padding: 24, background: 'var(--navy)', color: 'white' }}>
+                <h3 style={{ color: 'white', fontSize: '1.2rem', marginBottom: 10 }}>Looking to Enroll?</h3>
+                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', marginBottom: 18, lineHeight: 1.6 }}>
+                  Admissions for the 2025–26 academic session are currently underway.
+                </p>
+                <Link to="/admissions" className="btn btn-gold btn-sm" style={{ width: '100%' }}>Apply Online →</Link>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
       </section>
