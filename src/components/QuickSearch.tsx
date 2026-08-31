@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { facultyData, noticesData, newsData, eventsData } from '../data/schoolData';
+import { noticesData, newsData, eventsData } from '../data/schoolData';
 
 interface SearchResult {
   title: string;
@@ -13,7 +13,6 @@ const staticPages: SearchResult[] = [
   { title: 'Academic Programs & Curriculum', path: '/academics', category: 'Page', desc: 'Pre-Primary to Grade 12 Science & Management' },
   { title: 'Admissions & Fee Structure', path: '/admissions', category: 'Page', desc: 'Admission process, fees, and requirements' },
   { title: 'Interactive Fee Estimator Calculator', path: '/admissions#calculator', category: 'Tool', desc: 'Calculate monthly and annual fees' },
-  { title: 'Faculty & Teacher Directory', path: '/faculty', category: 'Page', desc: 'Meet our 85+ educators and departments' },
   { title: 'Official Notice Board', path: '/notices', category: 'Page', desc: 'Official circulars, exam dates, and holidays' },
   { title: 'Campus Facilities & Labs', path: '/facilities', category: 'Page', desc: 'Science labs, computer labs, library, and sports' },
   { title: 'Student Achievements & Honors', path: '/achievements', category: 'Page', desc: 'SEE board toppers, medals, and trophies' },
@@ -43,10 +42,9 @@ export default function QuickSearch({ isOpen, onClose }: { isOpen: boolean; onCl
 
   const q = query.toLowerCase();
 
-  // Combine static pages + dynamic notices + dynamic faculty + dynamic events + dynamic news
+  // Combine static pages + dynamic notices + dynamic events + dynamic news
   const dynamicResults: SearchResult[] = [
     ...staticPages,
-    ...facultyData.map(f => ({ title: `${f.name} (${f.role})`, path: '/faculty', category: 'Faculty', desc: `${f.department} · ${f.qualification}` })),
     ...noticesData.map(n => ({ title: n.title, path: '/notices', category: 'Notice', desc: n.content })),
     ...newsData.map(n => ({ title: n.title, path: `/news/${n.id}`, category: 'News', desc: n.excerpt })),
     ...eventsData.map(e => ({ title: e.title, path: '/events', category: 'Event', desc: `${e.date} · ${e.location}` })),

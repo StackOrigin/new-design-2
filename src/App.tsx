@@ -15,7 +15,6 @@ const Achievements = lazy(() => import('./pages/Achievements'));
 const Downloads = lazy(() => import('./pages/Downloads'));
 const Gallery = lazy(() => import('./pages/Gallery'));
 const Contact = lazy(() => import('./pages/Contact'));
-const Faculty = lazy(() => import('./pages/Faculty'));
 const Notices = lazy(() => import('./pages/Notices'));
 const Testimonials = lazy(() => import('./pages/Testimonials'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -45,7 +44,6 @@ function App() {
             <Route path="/downloads" element={<Downloads />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/faculty" element={<Faculty />} />
             <Route path="/notices" element={<Notices />} />
             <Route path="/testimonials" element={<Testimonials />} />
           </Route>

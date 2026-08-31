@@ -6,7 +6,6 @@ const quickLinks = [
   { label: 'Academics', path: '/academics' },
   { label: 'Admissions', path: '/admissions' },
   { label: 'Facilities', path: '/facilities' },
-  { label: 'Faculty', path: '/faculty' },
   { label: 'Gallery', path: '/gallery' },
   { label: 'Contact', path: '/contact' },
 ];
